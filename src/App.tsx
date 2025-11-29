@@ -735,34 +735,7 @@ const refreshModelSelection = async (key: string) => {
         
         {/* Left Panel: Preview (Viewer Area) */}
         <div className="w-2/3 overflow-y-auto p-12 flex justify-center items-start transition-colors relative" style={{ backgroundColor: VIEWER_BG_COLOR }}>
-          <div className="absolute left-12 right-12 top-20 flex flex-wrap gap-2 text-[11px] text-white/80" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-            <span className="uppercase tracking-wide font-semibold">Inline Format:</span>
-            <button
-              onClick={() => applyInlineFormat('bold')}
-              className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 border border-white/30"
-            >
-              Bold
-            </button>
-            <button
-              onClick={() => applyInlineFormat('italic')}
-              className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 border border-white/30"
-            >
-              Italic
-            </button>
-            <button
-              onClick={() => applyInlineFormat('underline')}
-              className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 border border-white/30"
-            >
-              Underline
-            </button>
-            <button
-              onClick={() => applyInlineFormat('createLink')}
-              className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 border border-white/30"
-            >
-              Link
-            </button>
-            <span className="text-white/60 text-[10px]">(Select text in the preview, then click a style)</span>
-          </div>
+          
 
             <div 
               ref={resumeRef}
