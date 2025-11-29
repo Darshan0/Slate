@@ -24,6 +24,13 @@ export const extractResumeKeywords = (resume: ResumeData): string[] => {
   const buckets: string[] = [];
   if (resume.header) {
     buckets.push(resume.header.title);
+    (resume.header.links || []).forEach((link) => {
+      if (typeof link === 'string') {
+        buckets.push(link);
+      } else {
+        buckets.push(link.label, link.url);
+      }
+    });
   }
   if (resume.summary) buckets.push(resume.summary);
   resume.skills?.forEach(skill => {
@@ -34,8 +41,8 @@ export const extractResumeKeywords = (resume: ResumeData): string[] => {
     buckets.push(job.company, job.role, job.location, job.date);
     job.details?.forEach(detail => buckets.push(detail));
   });
-  if (resume.education) {
-    buckets.push(resume.education.degree, resume.education.school);
+  if (Array.isArray(resume.education)) {
+    resume.education.forEach(edu => buckets.push(edu.degree, edu.school, edu.date));
   }
   const tokens = buckets.flatMap(tokenize);
   return Array.from(new Set(tokens));

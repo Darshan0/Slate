@@ -35,7 +35,7 @@ export type ResumeData = {
   summary: string;
   skills: ResumeSkill[];
   experience: ResumeJob[];
-  education: ResumeEducation;
+  education: ResumeEducation[];
 };
 
 export type BuilderConfig = {

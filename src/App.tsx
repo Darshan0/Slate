@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useMemo } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ResumeData, BuilderConfig, FontOption, ResumeLink, ATSReport, AiStatus, ModelStatus, SectionId, ResumeHeader } from './types';
 import { INITIAL_DATA, INITIAL_CONFIG, FONTS, STORAGE_KEYS } from './constants';
@@ -46,6 +46,61 @@ const AlertCircleIcon = ({ size = 16, className = "" }) => (
   </svg>
 );
 
+const MailIcon = ({ size = 14, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <polyline points="3 7 12 13 21 7" />
+  </svg>
+);
+
+const PhoneIcon = ({ size = 14, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.11 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2L8.09 9.91a16 16 0 0 0 6 6l1.38-1.38a2 2 0 0 1 2-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </svg>
+);
+
+const LinkIcon = ({ size = 16, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M10 13a5 5 0 0 0 7.54.54l2.42-2.42a5 5 0 0 0-7.07-7.07l-1.57 1.57" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-2.42 2.42a5 5 0 0 0 7.07 7.07l1.57-1.57" />
+  </svg>
+);
+
+const LinkedInIcon = ({ size = 14, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2ZM8.34 18H5.67v-8h2.67ZM7 8.34a1.55 1.55 0 1 1 0-3.1 1.55 1.55 0 0 1 0 3.1Zm11 9.66h-2.67v-3.93c0-1.04-.38-1.75-1.33-1.75-.72 0-1.15.48-1.34.95-.07.16-.09.39-.09.62V18H9.9s.04-6.74 0-8h2.67v1.13c.36-.56 1-.14 1.5-.73.57-.66 1.37-.97 2.2-.97 1.59 0 2.73 1.04 2.73 3.28Z" />
+  </svg>
+);
+
+const GitHubIcon = ({ size = 14, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48 0-.23-.01-.82-.01-1.6-2.5.54-3.03-1.2-3.03-1.2a2.38 2.38 0 0 0-1-1.31c-.82-.56.06-.55.06-.55a1.87 1.87 0 0 1 1.37.92 1.9 1.9 0 0 0 2.57.74 1.9 1.9 0 0 1 .57-1.19c-2-.23-4.1-1-4.1-4.37a3.43 3.43 0 0 1 .92-2.38 3.18 3.18 0 0 1 .09-2.35s.76-.24 2.5.9a8.6 8.6 0 0 1 4.56 0c1.73-1.14 2.5-.9 2.5-.9.33.74.36 1.58.1 2.35a3.43 3.43 0 0 1 .92 2.38c0 3.39-2.1 4.14-4.1 4.36a2.13 2.13 0 0 1 .6 1.66c0 1.2-.01 2.17-.01 2.47 0 .26.18.58.69.48A10 10 0 0 0 12 2Z" />
+  </svg>
+);
+
+const MediumIcon = ({ size = 14, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M4 7.5c0-.33.1-.64.3-.9L3 5V4h4l3 6.5L12.9 4H17v1l-1 1.5v7.57l1 1.43v1h-4v-1l1-1.43V8.1l-3.08 7.4h-.52L6.2 7.58V14l1 1.43V16H4v-.57L5 14V7.5Z" />
+    <circle cx="19" cy="11" r="1" />
+  </svg>
+);
+
+const ShieldCheckIcon = ({ size = 16, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M12 3l7 3v5c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-3z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+);
+
+const LayoutGridIcon = ({ size = 16, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+  </svg>
+);
+
 // --- Default Data ---
 declare global {
   interface Window {
@@ -84,7 +139,9 @@ const validateResumeData = (value: ResumeData): string | null => {
   if (!Array.isArray(header.links)) return '"header.links" must be an array.';
   const badLink = header.links.find((link: any) => {
     if (typeof link === 'string') return false;
-    return !link?.label || !link?.url;
+    if (!link?.label || link?.url === undefined || link?.url === null) return true;
+    if (typeof link.url === 'string' && !link.url.trim()) return false; // allow empty optional urls
+    return false;
   });
   if (badLink) return '"header.links" items must be strings or objects with "label" and "url".';
 
@@ -101,22 +158,41 @@ const validateResumeData = (value: ResumeData): string | null => {
   if (badJob) return 'Each experience needs "company", "role", and a "details" array.';
 
   const education = (value as any).education;
-  if (!education || typeof education !== 'object') return 'Missing "education" object.';
-  if (!education.degree || !education.school) return '"education" needs "degree" and "school".';
+  if (!Array.isArray(education)) return '"education" must be an array.';
+  const badEdu = education.find((edu: any) => !edu?.degree || !edu?.school);
+  if (badEdu) return 'Each education needs "degree" and "school".';
 
   return null;
 };
 
+const normalizeResumeData = (value: ResumeData): ResumeData => {
+  const education = (value as any).education;
+  const educationArr = Array.isArray(education)
+    ? education
+    : education
+    ? [education]
+    : [{ degree: '', school: '', date: '' }];
+  const cleanedEducation = educationArr.map((edu: any) => ({
+    degree: edu?.degree ?? '',
+    school: edu?.school ?? '',
+    date: edu?.date ?? ''
+  }));
+  return { ...value, education: cleanedEducation };
+};
+
 export default function ResumeBuilder() {
   const storedData = loadStoredData();
-  const initialData = storedData && !validateResumeData(storedData) ? storedData : INITIAL_DATA;
+  const normalizedStored = storedData ? normalizeResumeData(storedData) : null;
+  const initialData = normalizedStored && !validateResumeData(normalizedStored)
+    ? normalizedStored
+    : normalizeResumeData(INITIAL_DATA);
   const initialConfig = { ...INITIAL_CONFIG, ...(loadStoredConfig() ?? {}) };
 
   const [jsonInput, setJsonInput] = useState(() => formatJson(initialData));
   const [data, setData] = useState<ResumeData>(initialData);
   const [config, setConfig] = useState<BuilderConfig>(initialConfig);
   const [activeTab, setActiveTab] = useState<'json' | 'design' | 'ats' | 'layout'>('json'); 
-  const [dataViewMode, setDataViewMode] = useState<'json' | 'ui'>('json');
+  const [dataViewMode, setDataViewMode] = useState<'json' | 'ui'>('ui');
   const [error, setError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [pdfReady, setPdfReady] = useState(false);
@@ -128,12 +204,35 @@ export default function ResumeBuilder() {
   const [modelStatus, setModelStatus] = useState<ModelStatus>({ loading: false, selected: null, error: null, options: [] });
   const [showAllMatched, setShowAllMatched] = useState(false);
   const [showAllMissing, setShowAllMissing] = useState(false);
+  const [newLinkLabel, setNewLinkLabel] = useState<'LinkedIn' | 'GitHub' | 'Medium' | 'Custom'>('LinkedIn');
+  const [customLinkLabel, setCustomLinkLabel] = useState('');
+  const UI_INPUT_CLASS = "w-full p-3 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]";
+  const UI_TEXTAREA_CLASS = "w-full p-3 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]";
+  const UI_MULTILINE_INPUT_CLASS = `${UI_INPUT_CLASS} min-h-[44px] resize-none leading-snug`;
+  const EMPTY_DATA: ResumeData = {
+    header: { name: '', title: '', email: '', phone: '', links: [] },
+    summary: '',
+    skills: [],
+    experience: [],
+    education: []
+  };
+  const LAYOUT_ITEM_HEIGHT = 40;
+  const LAYOUT_ROW_GAP = 10;
+  const LAYOUT_HORIZONTAL_PADDING = 12;
+  const LAYOUT_TOP_PADDING = 16;
+  const LAYOUT_BOTTOM_PADDING = 40;
+  const LAYOUT_CARD_COLOR = '#ffffff';
+  const LAYOUT_CARD_BORDER = '#d6deea';
+  const LAYOUT_CARD_SHADOW = '#304ffe';
+  const LAYOUT_ACCENT_COLOR = '#304ffe';
+  const layoutRowSpacing = LAYOUT_ITEM_HEIGHT + LAYOUT_ROW_GAP;
+
   const [sectionOrder, setSectionOrder] = useState<SectionId[]>(['summary', 'skills', 'experience', 'education']);
   const [sectionPositions, setSectionPositions] = useState<Record<SectionId, number>>({
-    summary: 0,
-    skills: 90,
-    experience: 180,
-    education: 270
+    summary: LAYOUT_TOP_PADDING,
+    skills: LAYOUT_TOP_PADDING + layoutRowSpacing,
+    experience: LAYOUT_TOP_PADDING + layoutRowSpacing * 2,
+    education: LAYOUT_TOP_PADDING + layoutRowSpacing * 3
   });
   const [stageWidth, setStageWidth] = useState(420);
   const resumeRef = useRef<HTMLDivElement | null>(null);
@@ -202,17 +301,33 @@ export default function ResumeBuilder() {
     setSectionPositions((prev) => {
       const next = { ...prev };
       sectionOrder.forEach((id, idx) => {
-        if (next[id] === undefined) next[id] = idx * 90;
+        if (next[id] === undefined) next[id] = LAYOUT_TOP_PADDING + idx * layoutRowSpacing;
       });
       return next;
     });
   }, [sectionOrder]);
 
+  // Re-normalize positions when layout sizing changes so cards stay visible
+  useEffect(() => {
+    setSectionPositions((prev) => {
+      const stageHeight = LAYOUT_TOP_PADDING + sectionOrder.length * layoutRowSpacing + LAYOUT_BOTTOM_PADDING;
+      const minY = LAYOUT_TOP_PADDING;
+      const maxY = stageHeight - LAYOUT_ITEM_HEIGHT - LAYOUT_BOTTOM_PADDING;
+      const next: Record<SectionId, number> = { ...prev };
+      sectionOrder.forEach((id, idx) => {
+        const fallback = LAYOUT_TOP_PADDING + idx * layoutRowSpacing;
+        const current = next[id] ?? fallback;
+        next[id] = Math.min(maxY, Math.max(minY, current));
+      });
+      return next;
+    });
+  }, [layoutRowSpacing, LAYOUT_TOP_PADDING, LAYOUT_BOTTOM_PADDING, sectionOrder]);
+
   useEffect(() => {
     if (!layoutCanvasRef.current) return;
     const measure = () => {
       const width = layoutCanvasRef.current?.clientWidth || 420;
-      setStageWidth(Math.max(320, Math.min(width - 20, 640)));
+      setStageWidth(Math.max(320, Math.min(width, 800)));
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -367,6 +482,11 @@ const refreshModelSelection = async (key: string) => {
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setJsonInput(value);
+    if (!value.trim()) {
+      setData(EMPTY_DATA);
+      setError(null);
+      return;
+    }
     const parsed = safeParseJson<ResumeData>(value);
     if (!parsed) {
       setError("Invalid JSON format. Please check your syntax.");
@@ -593,33 +713,49 @@ const refreshModelSelection = async (key: string) => {
             <h3 className="resume-element text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-3" style={{ color: '#111827', borderColor: config.primaryColor }}>
               Education
             </h3>
-            <div className="resume-element flex justify-between items-end pb-2">
-              <div>
-                <span
-                  className="text-sm font-bold block outline-none"
-                  style={{ color: '#111827' }}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => syncData({ ...data, education: { ...data.education, degree: e.currentTarget.innerHTML } })}
-                  dangerouslySetInnerHTML={{ __html: data.education.degree }}
-                />
-                <span
-                  className="text-xs font-medium outline-none"
-                  style={{ color: config.secondaryColor }}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => syncData({ ...data, education: { ...data.education, school: e.currentTarget.innerHTML } })}
-                  dangerouslySetInnerHTML={{ __html: data.education.school }}
-                />
-              </div>
-              <span
-                className="text-xs font-bold outline-none"
-                style={{ color: config.secondaryColor }}
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={(e) => syncData({ ...data, education: { ...data.education, date: e.currentTarget.innerHTML } })}
-                dangerouslySetInnerHTML={{ __html: data.education.date }}
-              />
+            <div className="space-y-3">
+              {data.education.map((edu, i) => (
+                <div key={i} className="resume-element flex justify-between items-end pb-2">
+                  <div>
+                    <span
+                      className="text-sm font-bold block outline-none"
+                      style={{ color: '#111827' }}
+                      contentEditable
+                      suppressContentEditableWarning
+                      onBlur={(e) => {
+                        const next = [...data.education];
+                        next[i] = { ...edu, degree: e.currentTarget.innerHTML };
+                        syncData({ ...data, education: next });
+                      }}
+                      dangerouslySetInnerHTML={{ __html: edu.degree }}
+                    />
+                    <span
+                      className="text-xs font-medium outline-none"
+                      style={{ color: config.secondaryColor }}
+                      contentEditable
+                      suppressContentEditableWarning
+                      onBlur={(e) => {
+                        const next = [...data.education];
+                        next[i] = { ...edu, school: e.currentTarget.innerHTML };
+                        syncData({ ...data, education: next });
+                      }}
+                      dangerouslySetInnerHTML={{ __html: edu.school }}
+                    />
+                  </div>
+                  <span
+                    className="text-xs font-bold outline-none"
+                    style={{ color: config.secondaryColor }}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => {
+                      const next = [...data.education];
+                      next[i] = { ...edu, date: e.currentTarget.innerHTML };
+                      syncData({ ...data, education: next });
+                    }}
+                    dangerouslySetInnerHTML={{ __html: edu.date }}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         );
@@ -636,15 +772,144 @@ const refreshModelSelection = async (key: string) => {
     const updated = { ...sectionPositions, [id]: y };
     const sorted = [...sectionOrder].sort((a, b) => (updated[a] ?? 0) - (updated[b] ?? 0));
     const normalized: Record<SectionId, number> = sorted.reduce((acc, sid, idx) => {
-      acc[sid] = idx * 90;
+      acc[sid] = LAYOUT_TOP_PADDING + idx * layoutRowSpacing;
       return acc;
     }, {} as Record<SectionId, number>);
     setSectionOrder(sorted);
     setSectionPositions(normalized);
   };
 
+  const addExperience = () => {
+    setData(prev => ({
+      ...prev,
+      experience: [
+        ...prev.experience,
+        { company: '', role: '', date: '', details: [''] }
+      ]
+    }));
+  };
+
+  const removeExperience = (index: number) => {
+    setData(prev => {
+      const next = prev.experience.filter((_, i) => i !== index);
+      if (!next.length) {
+        next.push({ company: '', role: '', date: '', details: [''] });
+      }
+      return { ...prev, experience: next };
+    });
+  };
+
+  const updateExperienceField = (index: number, key: 'company' | 'role' | 'date', value: string) => {
+    setData(prev => {
+      const next = [...prev.experience];
+      next[index] = { ...next[index], [key]: value };
+      return { ...prev, experience: next };
+    });
+  };
+
+  const updateExperienceDetail = (index: number, detailIndex: number, value: string) => {
+    setData(prev => {
+      const next = [...prev.experience];
+      const details = [...(next[index]?.details || [])];
+      details[detailIndex] = value;
+      next[index] = { ...next[index], details };
+      return { ...prev, experience: next };
+    });
+  };
+
+  const removeExperienceDetail = (index: number, detailIndex: number) => {
+    setData(prev => {
+      const next = [...prev.experience];
+      const details = [...(next[index]?.details || [])].filter((_, i) => i !== detailIndex);
+      next[index] = { ...next[index], details: details.length ? details : [''] };
+      return { ...prev, experience: next };
+    });
+  };
+
+  const addExperienceDetail = (index: number) => {
+    setData(prev => {
+      const next = [...prev.experience];
+      const details = [...(next[index]?.details || [])];
+      details.push('');
+      next[index] = { ...next[index], details };
+      return { ...prev, experience: next };
+    });
+  };
+
+  const addEducation = () => {
+    setData(prev => ({
+      ...prev,
+      education: [...prev.education, { degree: '', school: '', date: '' }]
+    }));
+  };
+
+  const removeEducation = (index: number) => {
+    setData(prev => {
+      const next = prev.education.filter((_, i) => i !== index);
+      return { ...prev, education: next.length ? next : [{ degree: '', school: '', date: '' }] };
+    });
+  };
+
+  const updateEducationField = (index: number, key: 'degree' | 'school' | 'date', value: string) => {
+    setData(prev => {
+      const next = [...prev.education];
+      next[index] = { ...next[index], [key]: value };
+      return { ...prev, education: next };
+    });
+  };
+
+  const normalizedLinks = (): ResumeLink[] => {
+    return (data.header.links || []).map((link) => {
+      if (typeof link === 'string') return { label: 'Link', url: link };
+      return link;
+    });
+  };
+
+  const resolveLinkIcon = (label: string) => {
+    const key = label.toLowerCase();
+    if (key.includes('linkedin')) return <LinkedInIcon size={12} className="text-[#0a66c2]" />;
+    if (key.includes('github')) return <GitHubIcon size={12} className="text-gray-800" />;
+    if (key.includes('medium')) return <MediumIcon size={12} className="text-gray-700" />;
+    return <LinkIcon size={12} className="text-[#3f51b5]" />;
+  };
+
+  const updateLinkField = (index: number, key: 'label' | 'url', value: string) => {
+    const links = normalizedLinks();
+    links[index] = { ...links[index], [key]: value };
+    setData(prev => ({ ...prev, header: { ...prev.header, links } }));
+  };
+
+  const addLink = (label: string) => {
+    const links = normalizedLinks();
+    links.push({ label, url: 'https://' });
+    setData(prev => ({ ...prev, header: { ...prev.header, links } }));
+  };
+
+  const removeLink = (index: number) => {
+    const links = normalizedLinks().filter((_, i) => i !== index);
+    setData(prev => ({ ...prev, header: { ...prev.header, links } }));
+  };
+
+  const hasResumeContent = useMemo(() => {
+    const header = data.header || { name: '', title: '', email: '', phone: '', links: [] };
+    const headerHas = [header.name, header.title, header.email, header.phone].some((v) => v?.toString().trim());
+    const linksHas = (header.links || []).some((l) => {
+      if (typeof l === 'string') return l.trim();
+      return (l.label || '').trim() || (l.url || '').trim();
+    });
+    const summaryHas = (data.summary || '').trim().length > 0;
+    const skillsHas = (data.skills || []).some((s) => (s.category || '').trim() || (s.items || '').trim());
+    const expHas = (data.experience || []).some((job) => {
+      const base = [job.company, job.role, job.date, job.location].some((v) => v?.toString().trim());
+      const details = (job.details || []).some((d) => (d || '').trim());
+      return base || details;
+    });
+    const eduHas = (data.education || []).some((edu) => (edu.degree || '').trim() || (edu.school || '').trim() || (edu.date || '').trim());
+    return headerHas || linksHas || summaryHas || skillsHas || expHas || eduHas;
+  }, [data]);
+
   const handleDownload = async () => {
-    if (!resumeRef.current || !window.html2pdf || !pdfReady) {
+    if (!resumeRef.current || !window.html2pdf || !pdfReady || !hasResumeContent) {
       alert("PDF generator is still loading. Please try again in a few seconds.");
       return;
     }
@@ -661,7 +926,7 @@ const refreshModelSelection = async (key: string) => {
     
     const opt = {
       margin: 0,
-      filename: `${data.header.name.replace(/\s+/g, '_')}_Resume.pdf`,
+      filename: `${data.header.name.replace(/\s+/g, '_')}_resume.pdf`,
       image: { type: 'jpeg', quality: 1 },
       html2canvas: { scale: 3, useCORS: true, letterRendering: true, scrollY: 0 }, 
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -700,19 +965,21 @@ const refreshModelSelection = async (key: string) => {
         <div className="flex items-center gap-3">
           <span
             className={`text-[11px] font-semibold px-3 py-1 rounded-full border ${
-              pdfReady
+              !hasResumeContent
+                ? 'bg-gray-100 text-gray-500 border-gray-200'
+                : pdfReady
                 ? 'bg-green-50 text-green-700 border-green-200'
                 : 'bg-yellow-50 text-yellow-700 border-yellow-200'
             }`}
           >
-            {pdfReady ? 'PDF Ready' : 'Loading PDF'}
+            {!hasResumeContent ? 'PDF unavailable' : pdfReady ? 'PDF Ready' : 'Loading PDF'}
           </span>
           <button 
             onClick={handleDownload}
-            disabled={isDownloading || !pdfReady}
+            disabled={isDownloading || !pdfReady || !hasResumeContent}
             className={`
               relative overflow-hidden flex items-center gap-2 px-6 py-2 rounded shadow-md uppercase text-sm font-semibold tracking-wider transition-all
-              ${isDownloading || !pdfReady
+              ${isDownloading || !pdfReady || !hasResumeContent
                 ? 'bg-indigo-300 text-indigo-800 cursor-not-allowed' 
                 : 'bg-white text-[#3f51b5] hover:bg-gray-50 active:shadow-inner active:translate-y-px'
               }
@@ -734,7 +1001,13 @@ const refreshModelSelection = async (key: string) => {
       <main className="flex flex-1 overflow-hidden">
         
         {/* Left Panel: Preview (Viewer Area) */}
-        <div className="w-2/3 overflow-y-auto p-12 flex justify-center items-start transition-colors relative" style={{ backgroundColor: VIEWER_BG_COLOR }}>
+        <div className="w-2/3 overflow-y-auto p-12 flex flex-col gap-4 items-center transition-colors relative" style={{ backgroundColor: VIEWER_BG_COLOR }}>
+          {!hasResumeContent && (
+            <div className="w-full max-w-4xl bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm font-semibold">
+              <p className="font-bold">Add info to generate your resume.</p>
+              <p className="text-red-700">Use the UI Form or JSON tab to enter details. PDF download is disabled until content is added.</p>
+            </div>
+          )}
           
 
             <div 
@@ -790,38 +1063,48 @@ const refreshModelSelection = async (key: string) => {
                     dangerouslySetInnerHTML={{ __html: data.header.title }}
                   />
                   
-                  <div className="flex flex-wrap justify-center gap-3 text-xs font-medium" style={{ color: config.secondaryColor }}>
-                    <span
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => syncData({ ...data, header: { ...data.header, email: e.currentTarget.innerHTML } })}
-                      className="outline-none"
-                    >
-                      {data.header.email}
-                    </span>
-                    <span className="opacity-30 font-bold">|</span>
-                    <span
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => syncData({ ...data, header: { ...data.header, phone: e.currentTarget.innerHTML } })}
-                      className="outline-none"
-                    >
-                      {data.header.phone}
-                    </span>
-                    <span className="opacity-30 font-bold">|</span>
-                    {linkItems.map((link, i) => (
-                      <React.Fragment key={`${link.label}-${i}`}>
-                        <a 
-                          href={link.url || '#'} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="hover:opacity-70 cursor-pointer transition-opacity"
+                  <div className="flex flex-col items-center gap-2 text-xs font-medium" style={{ color: config.secondaryColor }}>
+                    <div className="flex flex-wrap items-center gap-3 justify-center">
+                      <div className="flex items-center gap-1">
+                        <MailIcon size={12} />
+                        <span
+                          contentEditable
+                          suppressContentEditableWarning
+                          onBlur={(e) => syncData({ ...data, header: { ...data.header, email: e.currentTarget.innerHTML } })}
+                          className="outline-none"
                         >
-                          {link.label}
-                        </a>
-                        {i < linkItems.length - 1 && <span className="opacity-30 font-bold">|</span>}
-                      </React.Fragment>
-                    ))}
+                          {data.header.email}
+                        </span>
+                      </div>
+                      <span className="text-gray-400">•</span>
+                      <div className="flex items-center gap-1">
+                        <PhoneIcon size={12} />
+                        <span
+                          contentEditable
+                          suppressContentEditableWarning
+                          onBlur={(e) => syncData({ ...data, header: { ...data.header, phone: e.currentTarget.innerHTML } })}
+                          className="outline-none"
+                        >
+                          {data.header.phone}
+                        </span>
+                      </div>
+                    </div>
+                    {linkItems.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-3 justify-center">
+                        {linkItems.map((link, i) => (
+                          <a 
+                            key={`${link.label}-${i}`}
+                            href={link.url || '#'} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="hover:opacity-70 cursor-pointer transition-opacity flex items-center gap-1"
+                          >
+                            {resolveLinkIcon(link.label)}
+                            <span>{link.label}</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -852,13 +1135,13 @@ const refreshModelSelection = async (key: string) => {
               onClick={() => setActiveTab('ats')}
               className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${activeTab === 'ats' ? 'text-[#3f51b5] border-b-2 border-[#3f51b5] bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              ATS
+              <ShieldCheckIcon size={16} /> ATS
             </button>
             <button 
               onClick={() => setActiveTab('layout')}
               className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${activeTab === 'layout' ? 'text-[#3f51b5] border-b-2 border-[#3f51b5] bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              Layout
+              <LayoutGridIcon size={16} /> Layout
             </button>
           </div>
 
@@ -886,16 +1169,16 @@ const refreshModelSelection = async (key: string) => {
                   <div className="flex items-center gap-3">
                     <span className="font-semibold text-gray-700">Data View:</span>
                     <button
-                      onClick={() => setDataViewMode('json')}
-                      className={`px-2.5 py-1 rounded text-[11px] font-semibold border ${dataViewMode === 'json' ? 'bg-[#3f51b5] text-white border-[#3f51b5]' : 'bg-white text-gray-700 border-gray-200'}`}
-                    >
-                      JSON
-                    </button>
-                    <button
                       onClick={() => setDataViewMode('ui')}
                       className={`px-2.5 py-1 rounded text-[11px] font-semibold border ${dataViewMode === 'ui' ? 'bg-[#3f51b5] text-white border-[#3f51b5]' : 'bg-white text-gray-700 border-gray-200'}`}
                     >
                       UI Form
+                    </button>
+                    <button
+                      onClick={() => setDataViewMode('json')}
+                      className={`px-2.5 py-1 rounded text-[11px] font-semibold border ${dataViewMode === 'json' ? 'bg-[#3f51b5] text-white border-[#3f51b5]' : 'bg-white text-gray-700 border-gray-200'}`}
+                    >
+                      JSON
                     </button>
                   </div>
                   {dataViewMode === 'json' && (
@@ -915,24 +1198,185 @@ const refreshModelSelection = async (key: string) => {
                     spellCheck={false}
                   />
                 ) : (
-                  <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm text-gray-700">
-                    <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex-1 overflow-y-auto p-6 space-y-8 text-sm text-gray-700">
+                    <div className="grid md:grid-cols-2 gap-3 text-[11px]">
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Name</label>
-                        <input value={data.header.name} onChange={(e) => syncData({ ...data, header: { ...data.header, name: e.target.value } })} className="w-full p-2.5 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]" />
-                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Title</label>
-                        <input value={data.header.title} onChange={(e) => syncData({ ...data, header: { ...data.header, title: e.target.value } })} className="w-full p-2.5 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]" />
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Name</label>
+                          <textarea value={data.header.name} onChange={(e) => syncData({ ...data, header: { ...data.header, name: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Title</label>
+                          <textarea value={data.header.title} onChange={(e) => syncData({ ...data, header: { ...data.header, title: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Email</label>
-                        <input value={data.header.email} onChange={(e) => syncData({ ...data, header: { ...data.header, email: e.target.value } })} className="w-full p-2.5 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]" />
-                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Phone</label>
-                        <input value={data.header.phone} onChange={(e) => syncData({ ...data, header: { ...data.header, phone: e.target.value } })} className="w-full p-2.5 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]" />
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Email</label>
+                          <textarea value={data.header.email} onChange={(e) => syncData({ ...data, header: { ...data.header, email: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Phone</label>
+                          <textarea value={data.header.phone} onChange={(e) => syncData({ ...data, header: { ...data.header, phone: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                        </div>
                       </div>
                     </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600 flex items-center gap-1"><LinkIcon size={14} /> Links (optional)</label>
+                        <div className="flex items-center gap-2">
+                          <div className="relative">
+                            <select
+                              value={newLinkLabel}
+                              onChange={(e) => setNewLinkLabel(e.target.value as any)}
+                              className="text-[11px] border border-[#3f51b5] rounded px-3 pr-8 py-1 font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#3f51b5] bg-white appearance-none"
+                            >
+                              <option value="LinkedIn">LinkedIn</option>
+                              <option value="GitHub">GitHub</option>
+                              <option value="Medium">Medium</option>
+                              <option value="Custom">Custom</option>
+                            </select>
+                            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#3f51b5]">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
+                                <polyline points="6 9 12 15 18 9" />
+                              </svg>
+                            </span>
+                          </div>
+                          {newLinkLabel === 'Custom' && (
+                            <input
+                              value={customLinkLabel}
+                              onChange={(e) => setCustomLinkLabel(e.target.value)}
+                              placeholder="Label"
+                              className="text-[11px] border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#3f51b5]"
+                              style={{ minWidth: 120 }}
+                            />
+                          )}
+                          <button
+                            onClick={() => addLink(newLinkLabel === 'Custom' ? customLinkLabel || 'Link' : newLinkLabel)}
+                            className="text-[11px] font-semibold text-[#3f51b5] border border-[#3f51b5] rounded px-2.5 py-1 hover:bg-indigo-50"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {normalizedLinks().map((link, idx) => (
+                          <div key={idx} className="border border-gray-200 rounded-lg p-2 flex flex-col gap-2 bg-gray-50/60">
+                            <div className="flex items-center justify-between">
+                              <p className="text-[11px] font-semibold text-gray-700">Link {idx + 1}</p>
+                              <button onClick={() => removeLink(idx)} className="text-[10px] text-red-600 hover:underline font-semibold">Remove</button>
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-2">
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Label</label>
+                                <textarea value={link.label} onChange={(e) => updateLinkField(idx, 'label', e.target.value)} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                              <div className="md:col-span-2 space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">URL</label>
+                                <textarea value={link.url} onChange={(e) => updateLinkField(idx, 'url', e.target.value)} placeholder="https://..." className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {normalizedLinks().length === 0 && <p className="text-[11px] text-gray-500">No links added. Use the dropdown to add LinkedIn, GitHub, Medium, or a custom link.</p>}
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
                       <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Summary</label>
-                      <textarea value={data.summary} onChange={(e) => syncData({ ...data, summary: e.target.value })} className="w-full min-h-[120px] p-3 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]" />
+                      <textarea value={data.summary} onChange={(e) => syncData({ ...data, summary: e.target.value })} className={`${UI_TEXTAREA_CLASS} min-h-[120px]`} />
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Experience</label>
+                        <button onClick={addExperience} className="text-[11px] font-semibold text-[#3f51b5] border border-[#3f51b5] rounded px-2.5 py-1 hover:bg-indigo-50">Add role</button>
+                      </div>
+                      <div className="space-y-3">
+                        {data.experience.map((exp, idx) => (
+                          <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-3 bg-gray-50/60">
+                            <div className="flex items-center justify-between">
+                              <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">Role {idx + 1}</p>
+                              <button onClick={() => removeExperience(idx)} className="text-[11px] text-red-600 hover:underline font-semibold">Remove role</button>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2">
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Company</label>
+                                <textarea value={exp.company} onChange={(e) => updateExperienceField(idx, 'company', e.target.value)} placeholder="Company" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Title</label>
+                                <textarea value={exp.role} onChange={(e) => updateExperienceField(idx, 'role', e.target.value)} placeholder="Role" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Dates</label>
+                                <textarea value={exp.date || ''} onChange={(e) => updateExperienceField(idx, 'date', e.target.value)} placeholder="Dates" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[11px] font-semibold text-gray-600">Points</p>
+                              <div className="space-y-1">
+                                {exp.details.map((detail, dIdx) => (
+                                  <div key={dIdx} className="space-y-1">
+                                    <div className="flex items-center justify-between">
+                                      <label className="text-[11px] font-semibold text-gray-600">Point {dIdx + 1}</label>
+                                      <button onClick={() => removeExperienceDetail(idx, dIdx)} className="text-[10px] text-red-600 hover:underline font-semibold">Remove</button>
+                                    </div>
+                                    <textarea
+                                      value={detail}
+                                      onChange={(e) => updateExperienceDetail(idx, dIdx, e.target.value)}
+                                      placeholder={`Point ${dIdx + 1}`}
+                                      className={UI_MULTILINE_INPUT_CLASS}
+                                      rows={2}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                              <button onClick={() => addExperienceDetail(idx)} className="text-[11px] font-semibold text-[#3f51b5] hover:underline mt-1">Add point</button>
+                            </div>
+                          </div>
+                        ))}
+                        {data.experience.length === 0 && (
+                          <p className="text-[11px] text-gray-500">No experience added yet.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Education</label>
+                        <button onClick={addEducation} className="text-[11px] font-semibold text-[#3f51b5] px-2 py-1 rounded border border-[#3f51b5] hover:bg-indigo-50">
+                          Add education
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        {data.education.map((edu, idx) => (
+                          <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50/60">
+                            <div className="flex items-center justify-between">
+                              <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">Education {idx + 1}</p>
+                              <button onClick={() => removeEducation(idx)} className="text-[11px] text-red-600 hover:underline font-semibold">Remove</button>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Degree</label>
+                                <textarea value={edu.degree} onChange={(e) => updateEducationField(idx, 'degree', e.target.value)} placeholder="Degree" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">School</label>
+                                <textarea value={edu.school} onChange={(e) => updateEducationField(idx, 'school', e.target.value)} placeholder="School" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Date</label>
+                                <textarea value={edu.date || ''} onChange={(e) => updateEducationField(idx, 'date', e.target.value)} placeholder="Date" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {data.education.length === 0 && (
+                          <p className="text-[11px] text-gray-500">No education added yet.</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1013,7 +1457,7 @@ const refreshModelSelection = async (key: string) => {
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-gray-600">
                       <span className="font-bold">Job Description</span>
-                      <span className="text-[10px] text-gray-500">{jobDescription.length ? `${jobDescription.length} chars` : 'Paste a role to analyze'}</span>
+                      <span className="text-[10px] text-gray-500">{jobDescription.length ? `${jobDescription.length} chars` : ''}</span>
                     </div>
                     <textarea value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} placeholder="Paste the role description here to see your ATS alignment..." className="w-full min-h-[150px] p-3 border border-gray-200 rounded text-[12px] text-gray-700 resize-vertical focus:outline-none focus:border-[#3f51b5] focus:ring-1 focus:ring-[#3f51b5] bg-white" />
                     <p className="text-[10px] text-gray-500">ATS score runs locally. AI refine sends the job description and resume JSON to Gemini using your key. {modelStatus.selected ? ` Selected model: ${modelStatus.selected}.` : ''}</p>
@@ -1059,13 +1503,6 @@ const refreshModelSelection = async (key: string) => {
                     </div>
                   </div>
                   <div className="space-y-2 border-t border-gray-200 pt-3">
-                    <p className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Improvement Tips</p>
-                    <div className="grid sm:grid-cols-2 gap-2 text-[11px] text-gray-700">
-                      <div className="bg-gray-50 border border-gray-100 rounded p-2"><p className="font-semibold text-gray-800 mb-1 text-[11px]">Keyword Fit</p><p>Weave missing keywords into bullets where they’re truthful; avoid stuffing.</p></div>
-                      <div className="bg-gray-50 border border-gray-100 rounded p-2"><p className="font-semibold text-gray-800 mb-1 text-[11px]">Title & Impact</p><p>Mirror the role title in your summary; quantify outcomes and tools used.</p></div>
-                    </div>
-                  </div>
-                  <div className="space-y-2 border-t border-gray-200 pt-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-[10px] uppercase tracking-wide text-gray-600 font-semibold">AI Assist</p>
@@ -1102,36 +1539,59 @@ const refreshModelSelection = async (key: string) => {
             {activeTab === 'layout' && (
               <div className="p-5 overflow-y-auto bg-gray-50" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '12px' }}>
                 <div className="space-y-2 mb-3">
-                  <p className="text-[12px] font-semibold text-gray-800">Drag sections to reorder.</p>
+                  <p className="text-[12px] font-semibold text-gray-800 flex items-center gap-2"><LayoutGridIcon size={14} /> Drag sections to reorder</p>
                   <p className="text-[11px] text-gray-600">This updates the preview order. Drag blocks in the canvas below.</p>
                 </div>
-                <div ref={layoutCanvasRef} className="rounded-xl border border-gray-200 bg-white shadow-sm p-3">
-                  <Stage width={stageWidth} height={sectionOrder.length * 90 + 80}>
+                <div ref={layoutCanvasRef} className="rounded-xl border border-gray-200 bg-white shadow-sm p-3 overflow-hidden">
+                  <Stage width={Math.max(260, stageWidth - 2)} height={LAYOUT_TOP_PADDING + sectionOrder.length * layoutRowSpacing + LAYOUT_BOTTOM_PADDING}>
                     <Layer>
                       {sectionOrder.map((id, idx) => {
-                        const y = sectionPositions[id] ?? idx * 90;
-                        const stageHeight = sectionOrder.length * 90 + 80;
-                        const rectWidth = Math.max(stageWidth - 40, 240);
+                        const stageCanvasWidth = Math.max(260, stageWidth - 2);
+                        const y = sectionPositions[id] ?? LAYOUT_TOP_PADDING + idx * layoutRowSpacing;
+                        const stageHeight = LAYOUT_TOP_PADDING + sectionOrder.length * layoutRowSpacing + LAYOUT_BOTTOM_PADDING;
+                        const rectWidth = Math.max(stageCanvasWidth - LAYOUT_HORIZONTAL_PADDING * 2, 220);
                         return (
                           <React.Fragment key={id}>
                             <Rect
-                              x={20}
+                              x={LAYOUT_HORIZONTAL_PADDING}
                               y={y}
                               width={rectWidth}
-                              height={60}
-                              fill="#eef2ff"
-                              stroke="#c7d2fe"
-                              cornerRadius={12}
+                              height={LAYOUT_ITEM_HEIGHT}
+                              fill={LAYOUT_CARD_COLOR}
+                              stroke={LAYOUT_CARD_BORDER}
+                              strokeWidth={0.9}
+                              cornerRadius={10}
+                              shadowColor={LAYOUT_CARD_SHADOW}
+                              shadowBlur={5}
+                              shadowOpacity={0.08}
+                              shadowOffset={{ x: 0, y: 2 }}
                               draggable
                               dragBoundFunc={(pos) => {
-                                const minY = 10;
-                                const maxY = stageHeight - 70;
-                                return { x: 20, y: Math.min(maxY, Math.max(minY, pos.y)) };
+                                const minY = LAYOUT_TOP_PADDING;
+                                const maxY = stageHeight - LAYOUT_ITEM_HEIGHT - LAYOUT_BOTTOM_PADDING;
+                                return { x: LAYOUT_HORIZONTAL_PADDING, y: Math.min(maxY, Math.max(minY, pos.y)) };
                               }}
                               onDragMove={(e) => handleSectionDragMove(id, e.target.y())}
                               onDragEnd={(e) => handleSectionDragEnd(id, e.target.y())}
                             />
-                            <Text x={40} y={y + 20} text={id.toUpperCase()} fontSize={15} fontStyle="bold" fill="#111827" fontFamily="Montserrat" />
+                            <Rect
+                              x={LAYOUT_HORIZONTAL_PADDING + 9}
+                              y={y + 7}
+                              width={4}
+                              height={LAYOUT_ITEM_HEIGHT - 14}
+                              fill={LAYOUT_ACCENT_COLOR}
+                              cornerRadius={3}
+                              opacity={0.9}
+                            />
+                            <Text
+                              x={LAYOUT_HORIZONTAL_PADDING + 22}
+                              y={y + 12}
+                              text={id.toUpperCase()}
+                              fontSize={13}
+                              fontStyle="bold"
+                              fill="#111827"
+                              fontFamily="Montserrat"
+                            />
                           </React.Fragment>
                         );
                       })}
@@ -1142,13 +1602,18 @@ const refreshModelSelection = async (key: string) => {
                   <button
                     onClick={() => {
                       setSectionOrder(['summary', 'skills', 'experience', 'education']);
-                      setSectionPositions({ summary: 0, skills: 90, experience: 180, education: 270 });
+                      setSectionPositions({
+                        summary: LAYOUT_TOP_PADDING,
+                        skills: LAYOUT_TOP_PADDING + layoutRowSpacing,
+                        experience: LAYOUT_TOP_PADDING + layoutRowSpacing * 2,
+                        education: LAYOUT_TOP_PADDING + layoutRowSpacing * 3
+                      });
                     }}
                     className="px-3 py-2 text-[11px] font-semibold text-[#3f51b5] border border-[#3f51b5] rounded hover:bg-indigo-50"
                   >
                     Reset Order
                   </button>
-                  <span className="text-[10px] text-gray-500">Future: add new sections (e.g., Certifications) as additional blocks.</span>
+                  <span className="text-[10px] text-gray-500">Drag cards in the canvas to reorder sections.</span>
                 </div>
               </div>
             )}
