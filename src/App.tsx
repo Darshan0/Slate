@@ -166,6 +166,14 @@ const validateResumeData = (value: ResumeData): string | null => {
 };
 
 const normalizeResumeData = (value: ResumeData): ResumeData => {
+  const experienceArr = Array.isArray(value.experience) ? value.experience : [];
+  const cleanedExperience = experienceArr.map((job: any) => ({
+    company: job?.company ?? '',
+    role: job?.role ?? '',
+    location: job?.location ?? '',
+    date: job?.date ?? '',
+    details: Array.isArray(job?.details) ? job.details : []
+  }));
   const education = (value as any).education;
   const educationArr = Array.isArray(education)
     ? education
@@ -177,7 +185,7 @@ const normalizeResumeData = (value: ResumeData): ResumeData => {
     school: edu?.school ?? '',
     date: edu?.date ?? ''
   }));
-  return { ...value, education: cleanedEducation };
+  return { ...value, education: cleanedEducation, experience: cleanedExperience };
 };
 
 export default function ResumeBuilder() {
@@ -784,7 +792,7 @@ const refreshModelSelection = async (key: string) => {
       ...prev,
       experience: [
         ...prev.experience,
-        { company: '', role: '', date: '', details: [''] }
+        { company: '', role: '', location: '', date: '', details: [''] }
       ]
     }));
   };
@@ -793,13 +801,16 @@ const refreshModelSelection = async (key: string) => {
     setData(prev => {
       const next = prev.experience.filter((_, i) => i !== index);
       if (!next.length) {
-        next.push({ company: '', role: '', date: '', details: [''] });
+        next.push({
+          company: '', role: '', date: '', details: [''],
+          location: ''
+        });
       }
       return { ...prev, experience: next };
     });
   };
 
-  const updateExperienceField = (index: number, key: 'company' | 'role' | 'date', value: string) => {
+  const updateExperienceField = (index: number, key: 'company' | 'role' | 'date' | 'location', value: string) => {
     setData(prev => {
       const next = [...prev.experience];
       next[index] = { ...next[index], [key]: value };
@@ -1308,6 +1319,10 @@ const refreshModelSelection = async (key: string) => {
                               <div className="space-y-1">
                                 <label className="text-[11px] font-semibold text-gray-600">Title</label>
                                 <textarea value={exp.role} onChange={(e) => updateExperienceField(idx, 'role', e.target.value)} placeholder="Role" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Location</label>
+                                <textarea value={exp.location} onChange={(e) => updateExperienceField(idx, 'location', e.target.value)} placeholder="Location" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
                               </div>
                               <div className="space-y-1">
                                 <label className="text-[11px] font-semibold text-gray-600">Dates</label>
