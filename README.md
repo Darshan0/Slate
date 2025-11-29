@@ -14,6 +14,12 @@ Vite + React resume builder with live A4 preview, ATS analysis, and PDF export.
 - Layout tab: drag-and-drop section ordering via React Konva.
 - ATS tab: local keyword overlap score, matched/missing keywords, tips, and optional Gemini-powered refinement using a session-only API key.
 
+## Screenshots
+![Design tab](./screenshot/design-tab.png)
+![ATS tab](./screenshot/ats-tab.png)
+![Data tab](./screenshot/data-tab.png)
+![Layout tab](./screenshot/layout-tab.png)
+
 ## Deploy to GitHub Pages (static)
 1. Install dependencies: `npm install`
 2. Build the static site: `npm run build` (outputs to `dist/`)
