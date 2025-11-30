@@ -214,6 +214,7 @@ export default function ResumeBuilder() {
   const [showAllMissing, setShowAllMissing] = useState(false);
   const [newLinkLabel, setNewLinkLabel] = useState<'LinkedIn' | 'GitHub' | 'Medium' | 'Custom'>('LinkedIn');
   const [customLinkLabel, setCustomLinkLabel] = useState('');
+  const [uiFormTab, setUiFormTab] = useState<'info' | 'skills'>('info');
   const UI_INPUT_CLASS = "w-full p-3 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]";
   const UI_TEXTAREA_CLASS = "w-full p-3 border border-gray-200 rounded focus:outline-none focus:border-[#3f51b5]";
   const UI_MULTILINE_INPUT_CLASS = `${UI_INPUT_CLASS} min-h-[44px] resize-none leading-snug`;
@@ -243,6 +244,8 @@ export default function ResumeBuilder() {
     education: LAYOUT_TOP_PADDING + layoutRowSpacing * 3
   });
   const [stageWidth, setStageWidth] = useState(420);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(true);
   const resumeRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const layoutCanvasRef = useRef<HTMLDivElement | null>(null);
@@ -342,6 +345,26 @@ export default function ResumeBuilder() {
     ro.observe(layoutCanvasRef.current);
     return () => ro.disconnect();
   }, []);
+
+  useEffect(() => {
+    const syncViewport = () => {
+      if (typeof window === 'undefined') return;
+      const narrow = window.innerWidth < 1024;
+      setIsMobileLayout(narrow);
+      if (!narrow) {
+        setIsEditorOpen(true);
+      }
+    };
+    syncViewport();
+    window.addEventListener('resize', syncViewport);
+    return () => window.removeEventListener('resize', syncViewport);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileLayout) {
+      setIsEditorOpen(false);
+    }
+  }, [isMobileLayout]);
 
 const refreshModelSelection = async (key: string) => {
     setModelStatus({ loading: true, selected: null, error: null, options: [] });
@@ -956,6 +979,11 @@ const refreshModelSelection = async (key: string) => {
   };
 
   const VIEWER_BG_COLOR = '#525252'; 
+  const pdfStatus = !hasResumeContent
+    ? { label: 'PDF unavailable', color: '#9ca3af' }
+    : pdfReady
+    ? { label: 'PDF Ready', color: '#16a34a' }
+    : { label: 'Loading PDF', color: '#eab308' };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 text-gray-800 overflow-hidden">
@@ -969,22 +997,35 @@ const refreshModelSelection = async (key: string) => {
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-xl font-medium tracking-wide">Slate</h1>
-            <p className="text-[10px] text-indigo-100 uppercase tracking-wider font-bold opacity-80">Build a better resume in seconds for free.</p>
+            <p className="hidden sm:block text-[10px] text-indigo-100 uppercase tracking-wider font-bold opacity-80">Build a better resume in seconds for free.</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <span
-            className={`text-[11px] font-semibold px-3 py-1 rounded-full border ${
-              !hasResumeContent
-                ? 'bg-gray-100 text-gray-500 border-gray-200'
-                : pdfReady
-                ? 'bg-green-50 text-green-700 border-green-200'
-                : 'bg-yellow-50 text-yellow-700 border-yellow-200'
-            }`}
-          >
-            {!hasResumeContent ? 'PDF unavailable' : pdfReady ? 'PDF Ready' : 'Loading PDF'}
-          </span>
+          {isMobileLayout ? (
+            <span className="w-2.5 h-2.5 rounded-full border border-white/60" style={{ backgroundColor: pdfStatus.color }} aria-label={pdfStatus.label} />
+          ) : (
+            <span
+              className={`text-[11px] font-semibold px-3 py-1 rounded-full border ${
+                !hasResumeContent
+                  ? 'bg-gray-100 text-gray-500 border-gray-200'
+                  : pdfReady
+                  ? 'bg-green-50 text-green-700 border-green-200'
+                  : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+              }`}
+            >
+              {pdfStatus.label}
+            </span>
+          )}
+          {isMobileLayout && (
+            <button
+              onClick={() => setIsEditorOpen(prev => !prev)}
+              className="lg:hidden px-3 py-2 rounded border border-white/50 text-white text-xs font-semibold bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
+            >
+              <EditIcon size={16} />
+              <span className="hidden sm:inline">{isEditorOpen ? 'Hide editor' : 'Open editor'}</span>
+            </button>
+          )}
           <button 
             onClick={handleDownload}
             disabled={isDownloading || !pdfReady || !hasResumeContent}
@@ -994,14 +1035,15 @@ const refreshModelSelection = async (key: string) => {
                 ? 'bg-indigo-300 text-indigo-800 cursor-not-allowed' 
                 : 'bg-white text-[#3f51b5] hover:bg-gray-50 active:shadow-inner active:translate-y-px'
               }
+              ${isMobileLayout ? 'px-3 py-2' : ''}
             `}
           >
             {isDownloading ? (
-              <span>Processing...</span>
+              <span className="text-xs">Processing...</span>
             ) : (
               <>
                 <DownloadIcon size={18} />
-                Download PDF
+                <span className="hidden sm:inline">Download PDF</span>
               </>
             )}
           </button>
@@ -1009,10 +1051,10 @@ const refreshModelSelection = async (key: string) => {
       </header>
 
       {/* --- Main Content --- */}
-      <main className="flex flex-1 overflow-hidden">
+      <main className="flex flex-1 overflow-hidden relative">
         
         {/* Left Panel: Preview (Viewer Area) */}
-        <div className="w-2/3 overflow-y-auto p-12 flex flex-col gap-4 items-center transition-colors relative" style={{ backgroundColor: VIEWER_BG_COLOR }}>
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-12 flex flex-col gap-4 items-center transition-colors relative" style={{ backgroundColor: VIEWER_BG_COLOR }}>
           {!hasResumeContent && (
             <div className="w-full max-w-4xl bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm font-semibold">
               <p className="font-bold">Add info to generate your resume.</p>
@@ -1025,9 +1067,10 @@ const refreshModelSelection = async (key: string) => {
               ref={resumeRef}
               className="shadow-2xl transition-transform origin-top relative"
               style={{
-                width: '210mm',
+                width: 'min(210mm, 100%)',
                 minHeight: '297mm', 
                 height: 'auto',      
+                maxWidth: '100%',
                 fontFamily: FONTS.find(f => f.name === config.fontFamily)?.family || 'sans-serif',
                 fontSize: `${config.baseFontSize}px`,
                 color: config.secondaryColor,
@@ -1126,7 +1169,13 @@ const refreshModelSelection = async (key: string) => {
         </div>
 
         {/* Right Panel: Tabs & Editor */}
-        <div className="w-1/3 flex flex-col bg-white border-l border-gray-200 z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+        <div
+          className={`flex flex-col bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${
+            isMobileLayout
+              ? `${isEditorOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-[105%] pointer-events-none'} fixed inset-x-0 bottom-0 top-16 z-30 border-t border-gray-200 lg:translate-y-0 lg:static`
+              : 'w-1/3 border-l border-gray-200 z-10'
+          }`}
+        >
           
           {/* Tabs */}
           <div className="flex border-b border-gray-200">
@@ -1158,12 +1207,22 @@ const refreshModelSelection = async (key: string) => {
 
           <div className="flex items-center justify-between px-4 py-2 text-[11px] text-gray-600 bg-gray-50 border-b border-gray-200">
             <span className="uppercase tracking-wide font-semibold text-gray-500">Autosaves locally</span>
-            <button 
-              onClick={handleReset}
-              className="text-[#3f51b5] font-semibold hover:underline focus:outline-none"
-            >
-              Reset to defaults
-            </button>
+            <div className="flex items-center gap-3">
+              {isMobileLayout && (
+                <button
+                  onClick={() => setIsEditorOpen(false)}
+                  className="text-[#3f51b5] font-semibold hover:underline focus:outline-none lg:hidden"
+                >
+                  Close
+                </button>
+              )}
+              <button 
+                onClick={handleReset}
+                className="text-[#3f51b5] font-semibold hover:underline focus:outline-none"
+              >
+                Reset to defaults
+              </button>
+            </div>
           </div>
 
           {/* Tab Content */}
@@ -1209,195 +1268,274 @@ const refreshModelSelection = async (key: string) => {
                     spellCheck={false}
                   />
                 ) : (
-                  <div className="flex-1 overflow-y-auto p-6 space-y-8 text-sm text-gray-700">
-                    <div className="grid md:grid-cols-2 gap-3 text-[11px]">
-                      <div className="space-y-2">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Name</label>
-                          <textarea value={data.header.name} onChange={(e) => syncData({ ...data, header: { ...data.header, name: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Title</label>
-                          <textarea value={data.header.title} onChange={(e) => syncData({ ...data, header: { ...data.header, title: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Email</label>
-                          <textarea value={data.header.email} onChange={(e) => syncData({ ...data, header: { ...data.header, email: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Phone</label>
-                          <textarea value={data.header.phone} onChange={(e) => syncData({ ...data, header: { ...data.header, phone: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                        </div>
-                      </div>
+                  <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm text-gray-700">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide">
+                      <button
+                        onClick={() => setUiFormTab('info')}
+                        className={`px-3 py-1.5 rounded border transition-colors ${uiFormTab === 'info' ? 'bg-[#3f51b5] text-white border-[#3f51b5]' : 'bg-white text-gray-700 border-gray-200 hover:border-[#3f51b5]'}`}
+                      >
+                        Personal & Experience
+                      </button>
+                      <button
+                        onClick={() => setUiFormTab('skills')}
+                        className={`px-3 py-1.5 rounded border transition-colors ${uiFormTab === 'skills' ? 'bg-[#3f51b5] text-white border-[#3f51b5]' : 'bg-white text-gray-700 border-gray-200 hover:border-[#3f51b5]'}`}
+                      >
+                        Technical Skills
+                      </button>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600 flex items-center gap-1"><LinkIcon size={14} /> Links (optional)</label>
-                        <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <select
-                              value={newLinkLabel}
-                              onChange={(e) => setNewLinkLabel(e.target.value as any)}
-                              className="text-[11px] border border-[#3f51b5] rounded px-3 pr-8 py-1 font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#3f51b5] bg-white appearance-none"
-                            >
-                              <option value="LinkedIn">LinkedIn</option>
-                              <option value="GitHub">GitHub</option>
-                              <option value="Medium">Medium</option>
-                              <option value="Custom">Custom</option>
-                            </select>
-                            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#3f51b5]">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
-                                <polyline points="6 9 12 15 18 9" />
-                              </svg>
-                            </span>
-                          </div>
-                          {newLinkLabel === 'Custom' && (
-                            <input
-                              value={customLinkLabel}
-                              onChange={(e) => setCustomLinkLabel(e.target.value)}
-                              placeholder="Label"
-                              className="text-[11px] border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#3f51b5]"
-                              style={{ minWidth: 120 }}
-                            />
-                          )}
-                          <button
-                            onClick={() => addLink(newLinkLabel === 'Custom' ? customLinkLabel || 'Link' : newLinkLabel)}
-                            className="text-[11px] font-semibold text-[#3f51b5] border border-[#3f51b5] rounded px-2.5 py-1 hover:bg-indigo-50"
-                          >
-                            Add
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        {normalizedLinks().map((link, idx) => (
-                          <div key={idx} className="border border-gray-200 rounded-lg p-2 flex flex-col gap-2 bg-gray-50/60">
-                            <div className="flex items-center justify-between">
-                              <p className="text-[11px] font-semibold text-gray-700">Link {idx + 1}</p>
-                              <button onClick={() => removeLink(idx)} className="text-[10px] text-red-600 hover:underline font-semibold">Remove</button>
-                            </div>
-                            <div className="grid md:grid-cols-3 gap-2">
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">Label</label>
-                                <textarea value={link.label} onChange={(e) => updateLinkField(idx, 'label', e.target.value)} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                              </div>
-                              <div className="md:col-span-2 space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">URL</label>
-                                <textarea value={link.url} onChange={(e) => updateLinkField(idx, 'url', e.target.value)} placeholder="https://..." className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {normalizedLinks().length === 0 && <p className="text-[11px] text-gray-500">No links added. Use the dropdown to add LinkedIn, GitHub, Medium, or a custom link.</p>}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Summary</label>
-                      <textarea value={data.summary} onChange={(e) => syncData({ ...data, summary: e.target.value })} className={`${UI_TEXTAREA_CLASS} min-h-[120px]`} />
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Experience</label>
-                        <button onClick={addExperience} className="text-[11px] font-semibold text-[#3f51b5] border border-[#3f51b5] rounded px-2.5 py-1 hover:bg-indigo-50">Add role</button>
-                      </div>
-                      <div className="space-y-3">
-                        {data.experience.map((exp, idx) => (
-                          <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-3 bg-gray-50/60">
-                            <div className="flex items-center justify-between">
-                              <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">Role {idx + 1}</p>
-                              <button onClick={() => removeExperience(idx)} className="text-[11px] text-red-600 hover:underline font-semibold">Remove role</button>
-                            </div>
-                            <div className="grid grid-cols-1 gap-2">
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">Company</label>
-                                <textarea value={exp.company} onChange={(e) => updateExperienceField(idx, 'company', e.target.value)} placeholder="Company" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">Title</label>
-                                <textarea value={exp.role} onChange={(e) => updateExperienceField(idx, 'role', e.target.value)} placeholder="Role" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">Location</label>
-                                <textarea value={exp.location} onChange={(e) => updateExperienceField(idx, 'location', e.target.value)} placeholder="Location" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">Dates</label>
-                                <textarea value={exp.date || ''} onChange={(e) => updateExperienceField(idx, 'date', e.target.value)} placeholder="Dates" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                              </div>
+                    {uiFormTab === 'info' && (
+                      <div className="space-y-8">
+                        <div className="grid md:grid-cols-2 gap-3 text-[11px]">
+                          <div className="space-y-2">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Name</label>
+                              <textarea value={data.header.name} onChange={(e) => syncData({ ...data, header: { ...data.header, name: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
                             </div>
                             <div className="space-y-1">
-                              <p className="text-[11px] font-semibold text-gray-600">Points</p>
-                              <div className="space-y-1">
-                                {exp.details.map((detail, dIdx) => (
-                                  <div key={dIdx} className="space-y-1">
-                                    <div className="flex items-center justify-between">
-                                      <label className="text-[11px] font-semibold text-gray-600">Point {dIdx + 1}</label>
-                                      <button onClick={() => removeExperienceDetail(idx, dIdx)} className="text-[10px] text-red-600 hover:underline font-semibold">Remove</button>
-                                    </div>
-                                    <textarea
-                                      value={detail}
-                                      onChange={(e) => updateExperienceDetail(idx, dIdx, e.target.value)}
-                                      placeholder={`Point ${dIdx + 1}`}
-                                      className={UI_MULTILINE_INPUT_CLASS}
-                                      rows={2}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                              <button onClick={() => addExperienceDetail(idx)} className="text-[11px] font-semibold text-[#3f51b5] hover:underline mt-1">Add point</button>
+                              <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Title</label>
+                              <textarea value={data.header.title} onChange={(e) => syncData({ ...data, header: { ...data.header, title: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
                             </div>
                           </div>
-                        ))}
-                        {data.experience.length === 0 && (
-                          <p className="text-[11px] text-gray-500">No experience added yet.</p>
-                        )}
-                      </div>
-                    </div>
+                          <div className="space-y-2">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Email</label>
+                              <textarea value={data.header.email} onChange={(e) => syncData({ ...data, header: { ...data.header, email: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Phone</label>
+                              <textarea value={data.header.phone} onChange={(e) => syncData({ ...data, header: { ...data.header, phone: e.target.value } })} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                            </div>
+                          </div>
+                        </div>
 
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Education</label>
-                        <button onClick={addEducation} className="text-[11px] font-semibold text-[#3f51b5] px-2 py-1 rounded border border-[#3f51b5] hover:bg-indigo-50">
-                          Add education
-                        </button>
-                      </div>
-                      <div className="space-y-3">
-                        {data.education.map((edu, idx) => (
-                          <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50/60">
-                            <div className="flex items-center justify-between">
-                              <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">Education {idx + 1}</p>
-                              <button onClick={() => removeEducation(idx)} className="text-[11px] text-red-600 hover:underline font-semibold">Remove</button>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">Degree</label>
-                                <textarea value={edu.degree} onChange={(e) => updateEducationField(idx, 'degree', e.target.value)} placeholder="Degree" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600 flex items-center gap-1"><LinkIcon size={14} /> Links (optional)</label>
+                            <div className="flex items-center gap-2">
+                              <div className="relative">
+                                <select
+                                  value={newLinkLabel}
+                                  onChange={(e) => setNewLinkLabel(e.target.value as any)}
+                                  className="text-[11px] border border-[#3f51b5] rounded px-3 pr-8 py-1 font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#3f51b5] bg-white appearance-none"
+                                >
+                                  <option value="LinkedIn">LinkedIn</option>
+                                  <option value="GitHub">GitHub</option>
+                                  <option value="Medium">Medium</option>
+                                  <option value="Custom">Custom</option>
+                                </select>
+                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#3f51b5]">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
+                                    <polyline points="6 9 12 15 18 9" />
+                                  </svg>
+                                </span>
                               </div>
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">School</label>
-                                <textarea value={edu.school} onChange={(e) => updateEducationField(idx, 'school', e.target.value)} placeholder="School" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-gray-600">Date</label>
-                                <textarea value={edu.date || ''} onChange={(e) => updateEducationField(idx, 'date', e.target.value)} placeholder="Date" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
-                              </div>
+                              {newLinkLabel === 'Custom' && (
+                                <input
+                                  value={customLinkLabel}
+                                  onChange={(e) => setCustomLinkLabel(e.target.value)}
+                                  placeholder="Label"
+                                  className="text-[11px] border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#3f51b5]"
+                                  style={{ minWidth: 120 }}
+                                />
+                              )}
+                              <button
+                                onClick={() => addLink(newLinkLabel === 'Custom' ? customLinkLabel || 'Link' : newLinkLabel)}
+                                className="text-[11px] font-semibold text-[#3f51b5] border border-[#3f51b5] rounded px-2.5 py-1 hover:bg-indigo-50"
+                              >
+                                Add
+                              </button>
                             </div>
                           </div>
-                        ))}
-                        {data.education.length === 0 && (
-                          <p className="text-[11px] text-gray-500">No education added yet.</p>
-                        )}
+                          <div className="space-y-2">
+                            {normalizedLinks().map((link, idx) => (
+                              <div key={idx} className="border border-gray-200 rounded-lg p-2 flex flex-col gap-2 bg-gray-50/60">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-[11px] font-semibold text-gray-700">Link {idx + 1}</p>
+                                  <button onClick={() => removeLink(idx)} className="text-[10px] text-red-600 hover:underline font-semibold">Remove</button>
+                                </div>
+                                <div className="grid md:grid-cols-3 gap-2">
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">Label</label>
+                                    <textarea value={link.label} onChange={(e) => updateLinkField(idx, 'label', e.target.value)} className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                  <div className="md:col-span-2 space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">URL</label>
+                                    <textarea value={link.url} onChange={(e) => updateLinkField(idx, 'url', e.target.value)} placeholder="https://..." className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            {normalizedLinks().length === 0 && <p className="text-[11px] text-gray-500">No links added. Use the dropdown to add LinkedIn, GitHub, Medium, or a custom link.</p>}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Summary</label>
+                          <textarea value={data.summary} onChange={(e) => syncData({ ...data, summary: e.target.value })} className={`${UI_TEXTAREA_CLASS} min-h-[120px]`} />
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Experience</label>
+                            <button onClick={addExperience} className="text-[11px] font-semibold text-[#3f51b5] border border-[#3f51b5] rounded px-2.5 py-1 hover:bg-indigo-50">Add role</button>
+                          </div>
+                          <div className="space-y-3">
+                            {data.experience.map((exp, idx) => (
+                              <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-3 bg-gray-50/60">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">Role {idx + 1}</p>
+                                  <button onClick={() => removeExperience(idx)} className="text-[11px] text-red-600 hover:underline font-semibold">Remove role</button>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2">
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">Company</label>
+                                    <textarea value={exp.company} onChange={(e) => updateExperienceField(idx, 'company', e.target.value)} placeholder="Company" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">Title</label>
+                                    <textarea value={exp.role} onChange={(e) => updateExperienceField(idx, 'role', e.target.value)} placeholder="Role" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">Location</label>
+                                    <textarea value={exp.location} onChange={(e) => updateExperienceField(idx, 'location', e.target.value)} placeholder="Location" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">Dates</label>
+                                    <textarea value={exp.date || ''} onChange={(e) => updateExperienceField(idx, 'date', e.target.value)} placeholder="Dates" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                </div>
+                                <div className="space-y-1">
+                                  <p className="text-[11px] font-semibold text-gray-600">Points</p>
+                                  <div className="space-y-1">
+                                    {exp.details.map((detail, dIdx) => (
+                                      <div key={dIdx} className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                          <label className="text-[11px] font-semibold text-gray-600">Point {dIdx + 1}</label>
+                                          <button onClick={() => removeExperienceDetail(idx, dIdx)} className="text-[10px] text-red-600 hover:underline font-semibold">Remove</button>
+                                        </div>
+                                        <textarea
+                                          value={detail}
+                                          onChange={(e) => updateExperienceDetail(idx, dIdx, e.target.value)}
+                                          placeholder={`Point ${dIdx + 1}`}
+                                          className={UI_MULTILINE_INPUT_CLASS}
+                                          rows={2}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <button onClick={() => addExperienceDetail(idx)} className="text-[11px] font-semibold text-[#3f51b5] hover:underline mt-1">Add point</button>
+                                </div>
+                              </div>
+                            ))}
+                            {data.experience.length === 0 && (
+                              <p className="text-[11px] text-gray-500">No experience added yet.</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Education</label>
+                            <button onClick={addEducation} className="text-[11px] font-semibold text-[#3f51b5] px-2 py-1 rounded border border-[#3f51b5] hover:bg-indigo-50">
+                              Add education
+                            </button>
+                          </div>
+                          <div className="space-y-3">
+                            {data.education.map((edu, idx) => (
+                              <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50/60">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">Education {idx + 1}</p>
+                                  <button onClick={() => removeEducation(idx)} className="text-[11px] text-red-600 hover:underline font-semibold">Remove</button>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">Degree</label>
+                                    <textarea value={edu.degree} onChange={(e) => updateEducationField(idx, 'degree', e.target.value)} placeholder="Degree" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">School</label>
+                                    <textarea value={edu.school} onChange={(e) => updateEducationField(idx, 'school', e.target.value)} placeholder="School" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[11px] font-semibold text-gray-600">Date</label>
+                                    <textarea value={edu.date || ''} onChange={(e) => updateEducationField(idx, 'date', e.target.value)} placeholder="Date" className={UI_MULTILINE_INPUT_CLASS} rows={2} />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            {data.education.length === 0 && (
+                              <p className="text-[11px] text-gray-500">No education added yet.</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {uiFormTab === 'skills' && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Technical Skills</label>
+                          <button
+                            onClick={() => syncData({ ...data, skills: [...data.skills, { category: '', items: '' }] })}
+                            className="text-[11px] font-semibold text-[#3f51b5] border border-[#3f51b5] rounded px-2.5 py-1 hover:bg-indigo-50"
+                          >
+                            Add category
+                          </button>
+                        </div>
+                      <div className="space-y-3">
+                          {data.skills.map((skill, i) => (
+                            <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50/60">
+                              <div className="flex items-center justify-between">
+                                <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">Category {i + 1}</p>
+                                <button
+                                  onClick={() => {
+                                    const next = [...data.skills];
+                                    next.splice(i, 1);
+                                    syncData({ ...data, skills: next });
+                                  }}
+                                  className="text-[11px] text-red-600 hover:underline font-semibold"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Category</label>
+                                <textarea
+                                  value={skill.category}
+                                  onChange={(e) => {
+                                    const next = [...data.skills];
+                                    next[i] = { ...skill, category: e.target.value };
+                                    syncData({ ...data, skills: next });
+                                  }}
+                                  className={UI_MULTILINE_INPUT_CLASS}
+                                  rows={2}
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-gray-600">Items</label>
+                                <textarea
+                                  value={skill.items}
+                                  onChange={(e) => {
+                                    const next = [...data.skills];
+                                    next[i] = { ...skill, items: e.target.value };
+                                    syncData({ ...data, skills: next });
+                                  }}
+                                  placeholder="Comma-separated skills"
+                                  className={UI_MULTILINE_INPUT_CLASS}
+                                  rows={2}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          {data.skills.length === 0 && <p className="text-[11px] text-gray-500">No skills added. Click “Add category” to start.</p>}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
             )}
-
             {activeTab === 'design' && (
               <div className="p-6 overflow-y-auto space-y-8">
                 <div>
